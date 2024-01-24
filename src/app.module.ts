@@ -6,6 +6,7 @@ import { ConferenceModule } from './conference/conference.module';
 import { StatsModule } from './stats/stats.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     AuthenticationModule,
     ConferenceModule,
     StatsModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [AppService],
