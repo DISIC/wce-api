@@ -1,18 +1,23 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { IsIP, IsOptional } from 'class-validator';
 import { HydratedDocument } from 'mongoose';
 
-export type MetricDocument = HydratedDocument<Feedback>;
+export type FeedbackDocument = HydratedDocument<Feedback>;
 
+class Rating {
+  @Prop()
+  qty: number;
+  @Prop()
+  inv: number;
+}
 @Schema()
 export class Feedback {
   @Prop()
-  ip: number;
+  @IsIP()
+  ip: string;
 
   @Prop()
-  rt: {
-    qty: number;
-    inv: number;
-  };
+  rt: Rating;
 
   @Prop()
   isVPN: number;
@@ -21,7 +26,8 @@ export class Feedback {
   com: string;
 
   @Prop()
-  jmmc_id: any;
+  @IsOptional()
+  jmmc_id: string;
 }
 
-export const MetricSchema = SchemaFactory.createForClass(Feedback);
+export const FeedbackSchema = SchemaFactory.createForClass(Feedback);
