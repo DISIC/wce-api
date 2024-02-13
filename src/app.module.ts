@@ -7,6 +7,7 @@ import { StatsModule } from './stats/stats.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FeedbackModule } from './feedback/feedback.module';
+import { ProsodyModule } from './prosody/prosody.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { FeedbackModule } from './feedback/feedback.module';
     ConferenceModule,
     StatsModule,
     FeedbackModule,
+    ProsodyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
