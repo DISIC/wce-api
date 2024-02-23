@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv';
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
@@ -10,7 +12,7 @@ async function bootstrap() {
     credentials: true,
   });
   app.useGlobalPipes(new ValidationPipe());
-  app.use(cookieParser(process.env.COOKIE_SECRET));
+  app.use(cookieParser(`${process.env.COOKIE_SECRET}`));
   await app.listen(3001);
 }
 bootstrap();
