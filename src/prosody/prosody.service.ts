@@ -23,7 +23,7 @@ export class ProsodyService {
     } catch (error) {
       if (urls.length > 1) {
         return this.getRoomFromProsody(urls.slice(1));
-      } else if (urls.length === 1 && error.response.status === 404) {
+      } else if (urls.length === 1 && error.response?.status === 404) {
         return [];
       } else {
         return false;
@@ -45,7 +45,9 @@ export class ProsodyService {
     if (await this.getRoomFromProsody(room_prosody_urls)) {
       return this.getRoomFromProsody(room_prosody_urls);
     } else {
-      throw new Error("l'url n'existe pas ou erreur de charger les urls");
+      throw new NotFoundException(
+        "l'url prosody n'existe pas ou erreur de charger les urls",
+      );
     }
   }
 

@@ -44,14 +44,14 @@ export class AuthenticationService {
         },
       );
 
-      const {
-        data: { user_info: userInfo },
-      } = await this.httpService.axiosRef.get(
+      const { data: userinfo } = await this.httpService.axiosRef.get(
         `${process.env.AGENTCONNECT_URL}/api/v2/userinfo`,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
 
-      return { accessToken, idToken, state, sendedState, userInfo };
+      console.log(userinfo);
+
+      return { idToken, userinfo };
     } catch (error) {
       console.log(error.response);
       throw new NotFoundException(

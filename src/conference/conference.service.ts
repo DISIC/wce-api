@@ -1,7 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ProsodyService } from 'src/prosody/prosody.service';
 import { JwtService } from '@nestjs/jwt';
-import moment from 'moment';
+import * as moment from 'moment';
 
 @Injectable()
 export class ConferenceService {
@@ -10,14 +14,14 @@ export class ConferenceService {
     private readonly jwtService: JwtService,
   ) {}
 
-  //   async roomExists(roomName: string) {
-  //     const exists = await this.prosodyService.roomExists(roomName);
-  //     if (exists && exists.length > 0) {
-  //       return { roomName };
-  //     } else {
-  //       throw new NotFoundException("la conférence n'existe pas");
-  //     }
-  //   }
+  async roomExists(roomName: string) {
+    const exists = await this.prosodyService.roomExists(roomName);
+    if (exists && exists.length > 0) {
+      return { roomName };
+    } else {
+      throw new NotFoundException("la conférence n'existe pas");
+    }
+  }
 
   async getRoomTestAccessToken(roomName: string) {
     if (
@@ -35,7 +39,11 @@ export class ConferenceService {
     }
   }
 
-  async getRoomAccessToken(roomName: string, webconfUserRegion: string) {
+  async getRoomAccessToken(
+    roomName: string,
+    webconfUserRegion: string,
+    accessToken: string,
+  ) {
     // si la conférence est déja ouverte
     const exists = await this.prosodyService.roomExists(roomName);
     if (exists && exists.length > 0) {
@@ -48,6 +56,21 @@ export class ConferenceService {
     }
 
     // si le salon n'existe pas et l'utilisateur internet (authentication check)
+    if (!accessToken) {
+      throw new UnauthorizedException(
+        "veuillez vous authentifier pour accéder à la webconf de l'Etat",
+      );
+    }
+
+    const isValid = await this.jwtService.verify(accessToken);
+
+    if (!isValid) {
+      throw new UnauthorizedException(
+        "Votre session est expirée. veuillez vous authentifier pour accéder à la webconf de l'Etat",
+      );
+    }
+
+    return this.sendToken(roomName);
   }
 
   verifyToken(jwt: string) {
