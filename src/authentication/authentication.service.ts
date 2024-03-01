@@ -49,8 +49,6 @@ export class AuthenticationService {
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
 
-      console.log(userinfo);
-
       return { idToken, userinfo };
     } catch (error) {
       console.log(error.response);
@@ -58,5 +56,16 @@ export class AuthenticationService {
         "erreur lors de récupération de l'access token",
       );
     }
+  }
+
+  logout(state, idToken) {
+    const query = {
+      id_token_hint: idToken,
+      state,
+      post_logout_redirect_uri:
+        process.env.AGENTCONNECT_REDIRECT_URL + '/logout_callback',
+    };
+    const url = process.env.AGENTCONNECT_URL + '/api/v2/session/end' + '?';
+    return url + queryString.stringify(query);
   }
 }

@@ -7,6 +7,7 @@ import {
   Res,
   Req,
   Headers,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as crypto from 'crypto';
@@ -16,6 +17,10 @@ import * as moment from 'moment';
 
 interface LoginCallbackQuery {
   code: string;
+  state: string;
+}
+
+interface LogoutCallbackQuery {
   state: string;
 }
 
@@ -65,25 +70,25 @@ export class AuthenticationController {
     const roomName = request.signedCookies?.roomName;
     response.clearCookie('state');
     response.clearCookie('roomName');
-    const { userinfo } = await this.authenticationService.loginCallback(
-      code,
-      state,
-      sendedState,
-    );
+    const { userinfo, idToken } =
+      await this.authenticationService.loginCallback(code, state, sendedState);
 
-    const refreshToken = this.jwtService.sign({
+    const tokenClaims = {
       iss: process.env.JITSI_JITSIJWT_ISS,
-      exp: moment().add(12, 'hours').unix(),
       aud: process.env.JITSI_JITSIJWT_AUD,
       sub: process.env.JITSI_JITSIJWT_SUB,
+      email: this.jwtService.decode(userinfo)?.email,
+      idToken,
+    };
+
+    const refreshToken = this.jwtService.sign({
+      exp: moment().add(12, 'hours').unix(),
+      ...tokenClaims,
     });
 
     const accessToken = this.jwtService.sign({
-      iss: process.env.JITSI_JITSIJWT_ISS,
       exp: moment().add(15, 'minutes').unix(),
-      aud: process.env.JITSI_JITSIJWT_AUD,
-      sub: process.env.JITSI_JITSIJWT_SUB,
-      userinfo: this.jwtService.decode(userinfo)?.email,
+      ...tokenClaims,
     });
 
     console.log('access', accessToken);
@@ -95,5 +100,83 @@ export class AuthenticationController {
     });
 
     return { ...this.conferenceService.sendToken(roomName), accessToken };
+  }
+
+  @Get('logout')
+  @Redirect('', 302)
+  logout(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { idToken } = this.jwtService.decode(
+      request?.signedCookies?.refreshToken,
+    );
+    const state = crypto.randomBytes(32).toString('hex');
+    response.cookie('state', state, {
+      httpOnly: true,
+      secure: true,
+      signed: true,
+    });
+    return { url: this.authenticationService.logout(state, idToken) };
+  }
+
+  @Get('logout_callback')
+  @Redirect('', 302)
+  logoutCallback(
+    @Query() query: LogoutCallbackQuery,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const sendedState = request?.signedCookies?.state;
+    const { state } = query;
+
+    if (state !== sendedState) {
+      throw new UnauthorizedException(
+        "le state de retour n'est pas la meme que celle qui a été envoyé",
+      );
+    }
+
+    response.clearCookie('refreshToken');
+    response.clearCookie('state');
+    return { url: '/' };
+  }
+
+  @Get('refreshToken')
+  async refreshToken(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    let refreshToken = request.signedCookies?.refreshToken;
+    try {
+      await this.jwtService.verify(refreshToken);
+
+      const tokenClaims = {
+        iss: process.env.JITSI_JITSIJWT_ISS,
+        aud: process.env.JITSI_JITSIJWT_AUD,
+        sub: process.env.JITSI_JITSIJWT_SUB,
+        email: this.jwtService.decode(refreshToken)?.email,
+        idToken: this.jwtService.decode(refreshToken)?.idToken,
+      };
+
+      refreshToken = this.jwtService.sign({
+        exp: moment().add(12, 'hours').unix(),
+        ...tokenClaims,
+      });
+
+      const accessToken = this.jwtService.sign({
+        exp: moment().add(15, 'minutes').unix(),
+        ...tokenClaims,
+      });
+
+      response.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        signed: true,
+      });
+
+      return { accessToken };
+    } catch (error) {
+      throw new UnauthorizedException('veuillez vous authetifier');
+    }
   }
 }

@@ -17,6 +17,7 @@ export class ConferenceController {
     @Headers('webconf-user-region') webconfUserRegion: string,
     @Headers('authorization') accessToken: string,
   ) {
+    accessToken = accessToken && accessToken.split(' ')[1];
     return this.conferenceService.getRoomAccessToken(
       params.roomName,
       webconfUserRegion,

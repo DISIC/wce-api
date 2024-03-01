@@ -62,13 +62,7 @@ export class ConferenceService {
       );
     }
 
-    const isValid = await this.jwtService.verify(accessToken);
-
-    if (!isValid) {
-      throw new UnauthorizedException(
-        "Votre session est expirée. veuillez vous authentifier pour accéder à la webconf de l'Etat",
-      );
-    }
+    await this.verifyToken(accessToken);
 
     return this.sendToken(roomName);
   }
