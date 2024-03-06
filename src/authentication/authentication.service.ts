@@ -11,13 +11,14 @@ export class AuthenticationService {
   constructor(private readonly httpService: HttpService) {}
 
   loginAuthorize(state: string, nonce: string) {
-    return `${process.env.AGENTCONNECT_URL}/api/v2/authorize?response_type=code&acr_values=eidas1&scope=${process.env.AGENTCONNECT_SCOPE}&client_id=${process.env.AGENTCONNECT_CLIENTID}&redirect_uri=${process.env.AGENTCONNECT_REDIRECT_URL}&state=${state}&nonce=${nonce}`;
+    return `${process.env.AGENTCONNECT_URL}/api/v2/authorize?response_type=code&acr_values=eidas1&scope=${process.env.AGENTCONNECT_SCOPE}&client_id=${process.env.AGENTCONNECT_CLIENTID}&redirect_uri=${process.env.AGENTCONNECT_REDIRECT_URL}/login_callback&state=${state}&nonce=${nonce}`;
   }
 
   async loginCallback(code: string, state: string, sendedState: string) {
     const client_id = process.env.AGENTCONNECT_CLIENTID;
     const client_secret = process.env.AGENTCONNECT_SECRET;
-    const redirect_uri = process.env.AGENTCONNECT_REDIRECT_URL;
+    const redirect_uri =
+      process.env.AGENTCONNECT_REDIRECT_URL + '/login_callback';
 
     if (sendedState !== state) {
       throw new UnauthorizedException(
@@ -51,7 +52,7 @@ export class AuthenticationService {
 
       return { idToken, userinfo };
     } catch (error) {
-      console.log(error.response);
+      console.log(error);
       throw new NotFoundException(
         "erreur lors de récupération de l'access token",
       );

@@ -68,8 +68,6 @@ export class AuthenticationController {
     const { code, state } = query;
     const sendedState = request.signedCookies?.state;
     const roomName = request.signedCookies?.roomName;
-    response.clearCookie('state');
-    response.clearCookie('roomName');
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
@@ -92,6 +90,8 @@ export class AuthenticationController {
     });
 
     console.log('access', accessToken);
+    response.clearCookie('state');
+    response.clearCookie('roomName');
 
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -108,9 +108,9 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const { idToken } = this.jwtService.decode(
-      request?.signedCookies?.refreshToken,
-    );
+    const { idToken } =
+      request?.signedCookies?.refreshToken &&
+      this.jwtService.decode(request?.signedCookies?.refreshToken);
     const state = crypto.randomBytes(32).toString('hex');
     response.cookie('state', state, {
       httpOnly: true,
@@ -121,7 +121,7 @@ export class AuthenticationController {
   }
 
   @Get('logout_callback')
-  @Redirect('', 302)
+  // @Redirect('', 302)
   logoutCallback(
     @Query() query: LogoutCallbackQuery,
     @Req() request: Request,
