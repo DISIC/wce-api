@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type MetricDocument = HydratedDocument<WhiteListedDomains>;
+export type WhiteListedDomainsDocument = HydratedDocument<WhiteListedDomains>;
 
 @Schema()
 export class WhiteListedDomains {
@@ -12,4 +12,5 @@ export class WhiteListedDomains {
   domains: any[];
 }
 
-export const MetricSchema = SchemaFactory.createForClass(WhiteListedDomains);
+export const WhiteListedDomainsSchema =
+  SchemaFactory.createForClass(WhiteListedDomains);

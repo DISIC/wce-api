@@ -1,6 +1,7 @@
+import { ByEmailDTO } from './DTOs/byEmail.dto';
 import { roomNameDTO } from './DTOs/conference.dto';
 import { ConferenceService } from './conference.service';
-import { Controller, Get, Headers, Param } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
 
 @Controller('')
 export class ConferenceController {
@@ -23,5 +24,14 @@ export class ConferenceController {
       webconfUserRegion,
       accessToken,
     );
+  }
+
+  @Post('conference/create/byemail')
+  async getRoomAccessTokenByEmail(
+    @Body() body: ByEmailDTO,
+    @Body('host') host: string,
+  ) {
+    const args = { room: body.roomName, email: body.email, host };
+    return this.conferenceService.getRoomAccessTokenByEmail(args);
   }
 }

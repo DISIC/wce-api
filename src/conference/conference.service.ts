@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -6,12 +7,19 @@ import {
 import { ProsodyService } from 'src/prosody/prosody.service';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { WhiteListedDomains } from 'src/schemas/WhiteListedDomains.schema';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class ConferenceService {
   constructor(
+    @InjectModel(WhiteListedDomains.name)
+    private whiteListedDomainsModel: Model<WhiteListedDomains>,
     private readonly prosodyService: ProsodyService,
     private readonly jwtService: JwtService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async roomExists(roomName: string) {
@@ -65,6 +73,86 @@ export class ConferenceService {
     await this.verifyToken(accessToken);
 
     return this.sendToken(roomName);
+  }
+
+  // authentication by email
+  async getRoomAccessTokenByEmail({ room, email, host }) {
+    const domain = email.split('@')[1];
+    try {
+      const docs = await this.whiteListedDomainsModel.find();
+      const exists = docs.some((element) => {
+        return element.domains.find((elt) => elt === domain);
+      });
+      if (!exists) {
+        return { isWhitelisted: false };
+      }
+      const { roomName, jwt } = this.sendToken(room);
+      const jwtConferenceLink = `https://${host}/${roomName}?jwt=${jwt}`;
+      const conferenceLink = `https://${host}/${roomName}`;
+      const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+          <meta charset="utf-8">
+          <!-- Title of this page -->
+          <title>WebConférence de l'État</title>
+          <!-- viewport of this page -->
+          <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+          <!-- description of this page -->
+          <meta name="description" content="WebConférence de l'État">
+          <!-- author of this page -->
+          <meta name="author" content="GMCD MTES">
+      </head>
+      <body>
+      <header>
+          <p>Bonjour,</p>
+          <p>
+              Vous avez effectué une demande de création de la conférence <i>${roomName}</i> sur notre site.<br>
+          </p>
+      </header>
+      <main>
+          Voici les liens pour accéder à la conférence:
+          <br>
+          <p style="overflow-wrap: break-word; margin:10px; color: black; background-color: white; border-radius: 2px; font-weight: bold;">
+              Lien modérateur (Valable pendant ${process.env.JITSI_JITSIJWT_EXPIRESAFTER} heures à partir de la réception de cet email) : 
+              <br>
+              <small>Ce lien vous permet de contrôler le fonctionnement de votre conférence.</small>    
+              <br>            
+              <a href=${jwtConferenceLink}>${jwtConferenceLink}</a>
+          </p>
+          <p style="margin:10px; color: black; background-color: white; border-radius: 2px; font-weight: bold;">
+              Lien invité :
+              <br>
+              <small>Ce lien doit être communiqué à vos invités.</small>
+              <br>
+              <a href=${conferenceLink}>${conferenceLink}</a>
+          </p>
+      </main>
+      <!-- Footer -->
+      <footer style="margin-top:20px">
+          <p>
+              <br>
+              <span>Pour nous contacter :</span>
+              <ul>
+                <li>Pour toute demande d'assistance :  <a href="mailto:assistance@webconf.numerique.gouv.fr">assistance@webconf.numerique.gouv.fr</a></li>
+                <li>Pour toute autre demande :  <a href="mailto:contact@webconf.numerique.gouv.fr">contact@webconf.numerique.gouv.fr</a></li>
+              </ul>
+          </p>
+      </footer>
+      </body>
+      </html>
+      `;
+      await this.mailerService.sendMail({
+        from: process.env.EMAIL_FROM, // sender address
+        to: email, // list of receivers
+        subject: process.env.EMAIL_SUBJECT + roomName, // Subject line
+        html: html,
+      });
+
+      return { isWhitelisted: true };
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
 
   verifyToken(jwt: string) {
