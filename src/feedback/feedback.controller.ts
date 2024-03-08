@@ -7,6 +7,7 @@ import {
   Req,
   BadRequestException,
   Headers,
+  Get,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
@@ -16,6 +17,11 @@ export class FeedbackController {
     private feedbackService: FeedbackService,
     private configService: ConfigService,
   ) {}
+
+  @Get('whereami')
+  whereami(@Req() req: Request) {
+    return this.feedbackService.whereami(req);
+  }
 
   @Post()
   createFeedback(

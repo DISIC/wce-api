@@ -29,7 +29,7 @@ export class ConferenceController {
   @Post('conference/create/byemail')
   async getRoomAccessTokenByEmail(
     @Body() body: ByEmailDTO,
-    @Body('host') host: string,
+    @Headers('host') host: string,
   ) {
     const args = { room: body.roomName, email: body.email, host };
     return this.conferenceService.getRoomAccessTokenByEmail(args);

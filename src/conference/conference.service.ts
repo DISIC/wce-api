@@ -80,12 +80,15 @@ export class ConferenceService {
     const domain = email.split('@')[1];
     try {
       const docs = await this.whiteListedDomainsModel.find();
-      const exists = docs.some((element) => {
-        return element.domains.find((elt) => elt === domain);
+      const exists = await docs.some((element) => {
+        const elt = element.domains.find((elt) => elt === domain);
+        return elt === domain;
       });
+
       if (!exists) {
         return { isWhitelisted: false };
       }
+
       const { roomName, jwt } = this.sendToken(room);
       const jwtConferenceLink = `https://${host}/${roomName}?jwt=${jwt}`;
       const conferenceLink = `https://${host}/${roomName}`;
@@ -149,9 +152,9 @@ export class ConferenceService {
         html: html,
       });
 
-      return { isWhitelisted: true };
+      return { isWhitelisted: true, sended: 'email sended' };
     } catch (error) {
-      throw new BadRequestException();
+      throw new BadRequestException('problem');
     }
   }
 

@@ -18,14 +18,16 @@ import { MailerModule } from '@nestjs-modules/mailer';
         pool: process.env.EMAIL_SMTP_POOL,
         host: process.env.EMAIL_SMTP_HOST,
         port: process.env.EMAIL_SMTP_PORT,
-        secure: process.env.EMAIL_SMTP_SECURE,
+        secure: process.env.EMAIL_SMTP_SECURE === 'true',
+        // ignoneTLS: true,
         auth: {
           user: process.env.EMAIL_SMTP_AUTH_USER,
           pass: process.env.EMAIL_SMTP_AUTH_PASS,
         },
         tls: {
           // do not fail on invalid certs
-          rejectUnauthorized: process.env.EMAIL_SMTP_TLS_REJECTUNAUTHORIZED,
+          rejectUnauthorized:
+            process.env.EMAIL_SMTP_TLS_REJECTUNAUTHORIZED === 'true',
         },
       },
       defaults: {

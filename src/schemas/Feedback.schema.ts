@@ -10,7 +10,7 @@ class Rating {
   @Prop()
   inv: number;
 }
-@Schema()
+@Schema({ collection: 'feedback' })
 export class Feedback {
   @Prop()
   @IsIP()

@@ -3,7 +3,7 @@ import { HydratedDocument } from 'mongoose';
 
 export type WhiteListedDomainsDocument = HydratedDocument<WhiteListedDomains>;
 
-@Schema()
+@Schema({ collection: 'whitelistedDomain' })
 export class WhiteListedDomains {
   @Prop()
   owner: string;
