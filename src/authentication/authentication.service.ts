@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as queryString from 'querystring';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 @Injectable()
 export class AuthenticationService {
@@ -42,17 +43,22 @@ export class AuthenticationService {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
+          proxy: false,
+          httpsAgent: new HttpsProxyAgent(process.env.AGENTCONNECT_PROXYURL),
         },
       );
 
       const { data: userinfo } = await this.httpService.axiosRef.get(
         `${process.env.AGENTCONNECT_URL}/api/v2/userinfo`,
-        { headers: { Authorization: `Bearer ${accessToken}` } },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          proxy: false,
+          httpsAgent: new HttpsProxyAgent(process.env.AGENTCONNECT_PROXYURL),
+        },
       );
 
       return { idToken, userinfo };
     } catch (error) {
-      console.log(error);
       throw new NotFoundException(
         "erreur lors de récupération de l'access token",
       );

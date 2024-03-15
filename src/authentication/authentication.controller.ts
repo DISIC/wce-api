@@ -89,7 +89,6 @@ export class AuthenticationController {
       ...tokenClaims,
     });
 
-    console.log('access', accessToken);
     response.clearCookie('state');
     response.clearCookie('roomName');
 
