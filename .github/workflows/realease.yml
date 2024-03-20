@@ -20,8 +20,7 @@ jobs:
           node-version: 20
       - run: npm ci --force
       - run: npm run build
-      - run: cp package.json package-lock.json dist/
-      - run: tar -czvf wce-api.tar.gz -C dist .
+      - run: tar -czvf wce-api.tar.gz dist package.json package-lock.json
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
