@@ -15,4 +15,5 @@ async function bootstrap() {
   app.use(cookieParser(`${process.env.COOKIE_SECRET}`));
   await app.listen(process.env.PORT || 3001);
 }
+
 bootstrap();
