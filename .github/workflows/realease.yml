@@ -2,6 +2,9 @@ name: Release
 
 on:
   push:
+    branches:
+      - "preprod"
+      - "main"
 
 jobs:
   release:
@@ -17,6 +20,7 @@ jobs:
           node-version: 20
       - run: npm ci --force
       - run: npm run build
+      - run: cp package.json package-lock.json dist/
       - run: tar -czvf wce-api.tar.gz -C dist .
       - run: npx semantic-release
         env:
