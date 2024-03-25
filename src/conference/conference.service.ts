@@ -70,7 +70,7 @@ export class ConferenceService {
       );
     }
 
-    await this.verifyToken(accessToken);
+    this.verifyToken(accessToken);
 
     return this.sendToken(roomName);
   }
