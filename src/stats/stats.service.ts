@@ -10,8 +10,8 @@ export class StatsService {
       if (data.length > 1) {
         const mergedData = { conf: 0, part: 0 };
         for (let i = 0; i < data.length; i++) {
-          mergedData.conf += data[i].conf;
-          mergedData.part += data[i].part;
+          mergedData.conf += data[i].conferences;
+          mergedData.part += data[i].participants;
         }
         return mergedData;
       } else {
