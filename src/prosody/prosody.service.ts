@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
@@ -8,6 +8,8 @@ export class ProsodyService {
     private configService: ConfigService,
     private readonly httpService: HttpService,
   ) {}
+
+  private readonly logger = new Logger(ProsodyService.name);
 
   private jicofo_available_instances: string[] = this.configService.get(
     'JICOFO_AVAILABLE_INSTANCES',
@@ -51,6 +53,9 @@ export class ProsodyService {
     if (await this.getRoomFromProsody(room_prosody_urls)) {
       return this.getRoomFromProsody(room_prosody_urls);
     } else {
+      this.logger.error(
+        "l'url prosody n'existe pas ou erreur de charger les urls",
+      );
       throw new NotFoundException(
         "l'url prosody n'existe pas ou erreur de charger les urls",
       );
@@ -69,6 +74,7 @@ export class ProsodyService {
       }
       return userFound;
     } catch (error) {
+      this.logger.error(error);
       throw error;
     }
   }
@@ -86,6 +92,7 @@ export class ProsodyService {
       res.forEach((element) => data.push(element.data));
       return data;
     } catch (error) {
+      this.logger.error("le serveur jicofo n'est pas disponible", error);
       throw new NotFoundException("le serveur jicofo n'est pas disponible");
     }
   }

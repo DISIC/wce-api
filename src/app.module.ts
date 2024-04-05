@@ -1,3 +1,4 @@
+import { configValidationSchema } from './config.schema';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -13,43 +14,53 @@ import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
-    MailerModule.forRoot({
-      transport: {
-        pool: process.env.EMAIL_SMTP_POOL,
-        host: process.env.EMAIL_SMTP_HOST,
-        port: process.env.EMAIL_SMTP_PORT,
-        secure: process.env.EMAIL_SMTP_SECURE === 'true',
-        // ignoneTLS: true,
-        auth: {
-          user: process.env.EMAIL_SMTP_AUTH_USER,
-          pass: process.env.EMAIL_SMTP_AUTH_PASS,
-        },
-        tls: {
-          // do not fail on invalid certs
-          rejectUnauthorized:
-            process.env.EMAIL_SMTP_TLS_REJECTUNAUTHORIZED === 'true',
-        },
-      },
-      defaults: {
-        from: '"nest-modules" <modules@nestjs.com>',
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          transport: {
+            pool: configService.get('EMAIL_SMTP_POOL'),
+            host: configService.get('EMAIL_SMTP_HOST'),
+            port: configService.get('EMAIL_SMTP_PORT'),
+            secure: configService.get('EMAIL_SMTP_SECURE') === 'true',
+            auth: {
+              user: configService.get('EMAIL_SMTP_AUTH_USER'),
+              pass: configService.get('EMAIL_SMTP_AUTH_PASS'),
+            },
+            tls: {
+              rejectUnauthorized:
+                configService.get('EMAIL_SMTP_TLS_REJECTUNAUTHORIZED') ===
+                'true',
+            },
+          },
+          defaults: {
+            from: '"nest-modules" <modules@nestjs.com>',
+          },
+        };
       },
     }),
-    JwtModule.register({
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        return { secret: configService.get('JITSI_JITSIJWT_SECRET') };
+      },
       global: true,
-      secret: process.env.JITSI_JITSIJWT_SECRET,
     }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
+      validationSchema: configValidationSchema,
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
+      inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         return {
           uri: configService.get('MONGO_URI'),
         };
       },
-      inject: [ConfigService],
     }),
     AuthenticationModule,
     ConferenceModule,
