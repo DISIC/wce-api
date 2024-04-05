@@ -21,7 +21,7 @@ export class StatsService {
         return data[0];
       }
     } catch (error) {
-      this.logger.error('erreur lors de la récupération des stats');
+      this.logger.error('erreur lors de la récupération des stats', error);
       throw error;
     }
   }

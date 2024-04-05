@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import {
   Logger,
   BadRequestException,
@@ -22,6 +23,7 @@ export class ConferenceService {
     private readonly prosodyService: ProsodyService,
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
   ) {}
 
   async roomExists(roomName: string) {
@@ -41,10 +43,10 @@ export class ConferenceService {
       roomName.length === 30
     ) {
       const jwt = this.jwtService.sign({
-        iss: process.env.JITSI_JITSIJWT_ISS,
+        iss: this.configService.get('JITSI_JITSIJWT_ISS'),
         exp: moment().add('5', 'minutes').unix(),
-        aud: process.env.JITSI_JITSIJWT_AUD,
-        sub: process.env.JITSI_JITSIJWT_SUB,
+        aud: this.configService.get('JITSI_JITSIJWT_AUD'),
+        sub: this.configService.get('JITSI_JITSIJWT_SUB'),
         room: roomName,
       });
       return { roomName, jwt };
@@ -125,7 +127,7 @@ export class ConferenceService {
           Voici les liens pour accéder à la conférence:
           <br>
           <p style="overflow-wrap: break-word; margin:10px; color: black; background-color: white; border-radius: 2px; font-weight: bold;">
-              Lien modérateur (Valable pendant ${process.env.JITSI_JITSIJWT_EXPIRESAFTER} heures à partir de la réception de cet email) : 
+              Lien modérateur (Valable pendant ${this.configService.get('JITSI_JITSIJWT_EXPIRESAFTER')} heures à partir de la réception de cet email) : 
               <br>
               <small>Ce lien vous permet de contrôler le fonctionnement de votre conférence.</small>    
               <br>            
@@ -154,9 +156,9 @@ export class ConferenceService {
       </html>
       `;
       await this.mailerService.sendMail({
-        from: process.env.EMAIL_FROM, // sender address
+        from: this.configService.get('EMAIL_FROM'), // sender address
         to: email, // list of receivers
-        subject: process.env.EMAIL_SUBJECT + roomName, // Subject line
+        subject: this.configService.get('EMAIL_SUBJECT') + roomName, // Subject line
         html: html,
       });
 
@@ -173,7 +175,7 @@ export class ConferenceService {
         return { jwt };
       }
     } catch (error) {
-      this.logger.error("l'accessToken est expiré");
+      this.logger.error("l'accessToken est expiré", error);
       throw new UnauthorizedException("l'accessToken est expiré");
     }
   }
@@ -184,12 +186,12 @@ export class ConferenceService {
 
   sendToken(roomName: string) {
     const jwt = this.jwtService.sign({
-      iss: process.env.JITSI_JITSIJWT_ISS,
+      iss: this.configService.get('JITSI_JITSIJWT_ISS'),
       exp: moment()
-        .add(process.env.JITSI_JITSIJWT_EXPIRESAFTER, 'hours')
+        .add(this.configService.get('JITSI_JITSIJWT_EXPIRESAFTER'), 'hours')
         .unix(),
-      aud: process.env.JITSI_JITSIJWT_AUD,
-      sub: process.env.JITSI_JITSIJWT_SUB,
+      aud: this.configService.get('JITSI_JITSIJWT_AUD'),
+      sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       room: roomName,
     });
     return { roomName, jwt };
