@@ -9,6 +9,12 @@ export class ProsodyService {
     private readonly httpService: HttpService,
   ) {}
 
+  private jicofo_available_instances: string[] = this.configService.get(
+    'JICOFO_AVAILABLE_INSTANCES',
+  )
+    ? this.configService.get('JICOFO_AVAILABLE_INSTANCES').split(' ')
+    : [];
+
   private prosody_available_instances: string[] = this.configService.get(
     'PROSODY_AVAILABLE_INSTANCES',
   )
@@ -38,7 +44,7 @@ export class ProsodyService {
         ? this.prosody_available_instances.map(
             (url) =>
               url +
-              `/room?domain=${prosody_domain}&room=${roomName}&subdomain=`,
+              `/room?domain=${prosody_domain}&room=${roomName.toLocaleLowerCase()}&subdomain=`,
           )
         : null;
 
@@ -69,9 +75,9 @@ export class ProsodyService {
 
   async getRealTimeStats() {
     const stats_prosody_urls =
-      this.prosody_available_instances.length !== 0 &&
-      this.prosody_available_instances.map((url) => {
-        return this.httpService.axiosRef.get(url + '/nbConfPart');
+      this.jicofo_available_instances.length !== 0 &&
+      this.jicofo_available_instances.map((url) => {
+        return this.httpService.axiosRef.get(url + '/stats');
       });
 
     try {
@@ -80,7 +86,7 @@ export class ProsodyService {
       res.forEach((element) => data.push(element.data));
       return data;
     } catch (error) {
-      throw new NotFoundException("le serveur prosody n'est pas disponible");
+      throw new NotFoundException("le serveur jicofo n'est pas disponible");
     }
   }
 }

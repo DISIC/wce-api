@@ -29,7 +29,6 @@ export class AuthenticationController {
 
   @Get('whereami')
   whereami(@Headers('webconf-user-region') userAgent: string) {
-    console.log(userAgent);
     return userAgent;
   }
 
