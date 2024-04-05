@@ -1,4 +1,5 @@
 import {
+  Logger,
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -14,6 +15,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class ConferenceService {
+  private readonly logger = new Logger(ConferenceService.name);
   constructor(
     @InjectModel(WhiteListedDomains.name)
     private whiteListedDomainsModel: Model<WhiteListedDomains>,
@@ -27,11 +29,13 @@ export class ConferenceService {
     if (exists && exists.length > 0) {
       return { roomName };
     } else {
+      this.logger.error("la conférence n'existe pas");
       throw new NotFoundException("la conférence n'existe pas");
     }
   }
 
   async getRoomTestAccessToken(roomName: string) {
+    this.logger.log("récupération de l'accessToken pour tester le materiel");
     if (
       roomName.toLocaleLowerCase().startsWith('browserTest123') &&
       roomName.length === 30
@@ -52,6 +56,7 @@ export class ConferenceService {
     webconfUserRegion: string,
     accessToken: string,
   ) {
+    this.logger.log("récupération de l'accessToken pour ouvrir une conférence");
     // si la conférence est déja ouverte
     const exists = await this.prosodyService.roomExists(roomName);
     if (exists && exists.length > 0) {
@@ -65,6 +70,9 @@ export class ConferenceService {
 
     // si le salon n'existe pas et l'utilisateur internet (authentication check)
     if (!accessToken) {
+      this.logger.warn(
+        "veuillez vous authentifier pour accéder à la webconf de l'Etat",
+      );
       throw new UnauthorizedException(
         "veuillez vous authentifier pour accéder à la webconf de l'Etat",
       );
@@ -154,7 +162,8 @@ export class ConferenceService {
 
       return { isWhitelisted: true, sended: 'email sended' };
     } catch (error) {
-      throw new BadRequestException('problem');
+      this.logger.error("erreur de l'envoi de l'email");
+      throw new BadRequestException("erreur de l'envoi de l'email");
     }
   }
 
@@ -164,6 +173,7 @@ export class ConferenceService {
         return { jwt };
       }
     } catch (error) {
+      this.logger.error("l'accessToken est expiré");
       throw new UnauthorizedException("l'accessToken est expiré");
     }
   }
