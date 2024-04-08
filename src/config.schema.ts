@@ -1,5 +1,5 @@
 import * as joi from 'joi';
-
+// env vars validation
 export const configValidationSchema = joi.object({
   JMMC_URL: joi.string().uri().required(),
   COOKIE_SECRET: joi.string().required(),
