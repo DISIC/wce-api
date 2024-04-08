@@ -11,23 +11,14 @@ export const configValidationSchema = joi.object({
   AGENTCONNECT_SCOPE: joi.string().required().default('openid email'),
   AGENTCONNECT_SECRET: joi.string().required(),
   AGENTCONNECT_URL: joi.string().uri().required(),
-  //config
-  CONFIG_FILE: joi
-    .string()
-    .required()
-    .default('/home/hkhait/webconf_config.json'),
   //Email
-  EMAIL_CONFERENCETOKENLENGTH: joi.number().required(),
   EMAIL_FROM: joi.string().required(),
-  //   EMAIL_SMTP_AUTH_PASS: joi.string().allow(null).optional(),
-  //   EMAIL_SMTP_AUTH_USER: joi.string().allow(null).optional(),
   EMAIL_SMTP_HOST: joi.string().required().default('localhost'),
   EMAIL_SMTP_POOL: joi.boolean().required(),
   EMAIL_SMTP_PORT: joi.number().required(),
   EMAIL_SMTP_SECURE: joi.boolean().required(),
   EMAIL_SMTP_TLS_REJECTUNAUTHORIZED: joi.boolean().required(),
   EMAIL_SUBJECT: joi.string().required(),
-  EMAIL_TOKENEXPIRATIONINHOURS: joi.number().required(),
   //frontconf
   FRONTCONF_ROOMNAMECONSTRAINT_LENGTH: joi.number().required(),
   FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS: joi.number().required(),
@@ -44,8 +35,6 @@ export const configValidationSchema = joi.object({
   //prosody
   PROSODY_AVAILABLE_INSTANCES: joi.string().required(),
   PROSODY_DOMAIN: joi.string().required(),
-  REACT_APP_BASEURL: joi.string().required(),
-  TITLE: joi.string().required(),
-  TRUSTED_REVERSE_PROXIES: joi.string().required(),
-  USERSFILTERINGMETHOD: joi.string().required(),
+  //jicofo
+  JICOFO_AVAILABLE_INSTANCES: joi.string().required(),
 });
