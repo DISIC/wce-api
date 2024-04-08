@@ -3,7 +3,7 @@ import * as joi from 'joi';
 export const configValidationSchema = joi.object({
   JMMC_URL: joi.string().uri().required(),
   COOKIE_SECRET: joi.string().required(),
-  //AgentConnect
+  //agentConnect
   AGENTCONNECT_CLIENTID: joi.string().required(),
   AGENTCONNECT_EXPIRESAFTER: joi.number().default(10),
   AGENTCONNECT_PROXYURL: joi.string().uri().required(),
@@ -16,7 +16,7 @@ export const configValidationSchema = joi.object({
     .string()
     .required()
     .default('/home/hkhait/webconf_config.json'),
-  //email
+  //Email
   EMAIL_CONFERENCETOKENLENGTH: joi.number().required(),
   EMAIL_FROM: joi.string().required(),
   //   EMAIL_SMTP_AUTH_PASS: joi.string().allow(null).optional(),
