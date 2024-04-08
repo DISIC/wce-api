@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { AuthenticationService } from './authentication.service';
 import {
   Controller,
@@ -14,15 +15,8 @@ import * as crypto from 'crypto';
 import { ConferenceService } from 'src/conference/conference.service';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
-
-interface LoginCallbackQuery {
-  code: string;
-  state: string;
-}
-
-interface LogoutCallbackQuery {
-  state: string;
-}
+import { LoginCallbackDTO } from './DTOs/LoginCallbackDTO';
+import { LogoutCallbackDTO } from './DTOs/LogoutCallbackDTO';
 
 @Controller('authentication')
 export class AuthenticationController {
@@ -30,11 +24,11 @@ export class AuthenticationController {
     private readonly authenticationService: AuthenticationService,
     private readonly conferenceService: ConferenceService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Get('whereami')
   whereami(@Headers('webconf-user-region') userAgent: string) {
-    console.log(userAgent);
     return userAgent;
   }
 
@@ -61,7 +55,7 @@ export class AuthenticationController {
 
   @Get('login_callback')
   async loginCallback(
-    @Query() query: LoginCallbackQuery,
+    @Query() query: LoginCallbackDTO,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
@@ -72,9 +66,9 @@ export class AuthenticationController {
       await this.authenticationService.loginCallback(code, state, sendedState);
 
     const tokenClaims = {
-      iss: process.env.JITSI_JITSIJWT_ISS,
-      aud: process.env.JITSI_JITSIJWT_AUD,
-      sub: process.env.JITSI_JITSIJWT_SUB,
+      iss: this.configService.get('JITSI_JITSIJWT_ISS'),
+      aud: this.configService.get('JITSI_JITSIJWT_AUD'),
+      sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.jwtService.decode(userinfo)?.email,
       idToken,
     };
@@ -122,7 +116,7 @@ export class AuthenticationController {
   @Get('logout_callback')
   // @Redirect('', 302)
   logoutCallback(
-    @Query() query: LogoutCallbackQuery,
+    @Query() query: LogoutCallbackDTO,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
@@ -150,9 +144,9 @@ export class AuthenticationController {
       await this.jwtService.verify(refreshToken);
 
       const tokenClaims = {
-        iss: process.env.JITSI_JITSIJWT_ISS,
-        aud: process.env.JITSI_JITSIJWT_AUD,
-        sub: process.env.JITSI_JITSIJWT_SUB,
+        iss: this.configService.get('JITSI_JITSIJWT_ISS'),
+        aud: this.configService.get('JITSI_JITSIJWT_AUD'),
+        sub: this.configService.get('JITSI_JITSIJWT_SUB'),
         email: this.jwtService.decode(refreshToken)?.email,
         idToken: this.jwtService.decode(refreshToken)?.idToken,
       };
@@ -175,7 +169,7 @@ export class AuthenticationController {
 
       return { accessToken };
     } catch (error) {
-      throw new UnauthorizedException('veuillez vous authetifier');
+      throw new UnauthorizedException('veuillez vous authentifier');
     }
   }
 }

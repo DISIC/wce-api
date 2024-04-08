@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
@@ -8,6 +8,14 @@ export class ProsodyService {
     private configService: ConfigService,
     private readonly httpService: HttpService,
   ) {}
+
+  private readonly logger = new Logger(ProsodyService.name);
+
+  private jicofo_available_instances: string[] = this.configService.get(
+    'JICOFO_AVAILABLE_INSTANCES',
+  )
+    ? this.configService.get('JICOFO_AVAILABLE_INSTANCES').split(' ')
+    : [];
 
   private prosody_available_instances: string[] = this.configService.get(
     'PROSODY_AVAILABLE_INSTANCES',
@@ -38,13 +46,16 @@ export class ProsodyService {
         ? this.prosody_available_instances.map(
             (url) =>
               url +
-              `/room?domain=${prosody_domain}&room=${roomName}&subdomain=`,
+              `/room?domain=${prosody_domain}&room=${roomName.toLocaleLowerCase()}&subdomain=`,
           )
         : null;
 
     if (await this.getRoomFromProsody(room_prosody_urls)) {
       return this.getRoomFromProsody(room_prosody_urls);
     } else {
+      this.logger.error(
+        "l'url prosody n'existe pas ou erreur de charger les urls",
+      );
       throw new NotFoundException(
         "l'url prosody n'existe pas ou erreur de charger les urls",
       );
@@ -63,15 +74,16 @@ export class ProsodyService {
       }
       return userFound;
     } catch (error) {
+      this.logger.error(error);
       throw error;
     }
   }
 
   async getRealTimeStats() {
     const stats_prosody_urls =
-      this.prosody_available_instances.length !== 0 &&
-      this.prosody_available_instances.map((url) => {
-        return this.httpService.axiosRef.get(url + '/nbConfPart');
+      this.jicofo_available_instances.length !== 0 &&
+      this.jicofo_available_instances.map((url) => {
+        return this.httpService.axiosRef.get(url + '/stats');
       });
 
     try {
@@ -80,7 +92,8 @@ export class ProsodyService {
       res.forEach((element) => data.push(element.data));
       return data;
     } catch (error) {
-      throw new NotFoundException("le serveur prosody n'est pas disponible");
+      this.logger.error("le serveur jicofo n'est pas disponible", error);
+      throw new NotFoundException("le serveur jicofo n'est pas disponible");
     }
   }
 }

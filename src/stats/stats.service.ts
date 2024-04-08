@@ -1,8 +1,9 @@
 import { ProsodyService } from './../prosody/prosody.service';
-import { Injectable } from '@nestjs/common';
+import { Logger, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class StatsService {
+  private readonly logger = new Logger(StatsService.name);
   constructor(private prosodyService: ProsodyService) {}
   async homePageStats() {
     try {
@@ -10,14 +11,17 @@ export class StatsService {
       if (data.length > 1) {
         const mergedData = { conf: 0, part: 0 };
         for (let i = 0; i < data.length; i++) {
-          mergedData.conf += data[i].conf;
-          mergedData.part += data[i].part;
+          mergedData.conf += data[i].conferences;
+          mergedData.part += data[i].participants;
         }
+        this.logger.log('stats récupérés' + mergedData);
         return mergedData;
       } else {
+        this.logger.log('stats récupérés' + data[0]);
         return data[0];
       }
     } catch (error) {
+      this.logger.error('erreur lors de la récupération des stats', error);
       throw error;
     }
   }

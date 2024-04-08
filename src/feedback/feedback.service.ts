@@ -11,9 +11,11 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { HttpService } from '@nestjs/axios';
 import { catchError, firstValueFrom } from 'rxjs';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class FeedbackService {
+  private readonly logger = new Logger(FeedbackService.name);
   constructor(
     @InjectModel(Feedback.name) private feedbackModel: Model<Feedback>,
     private configService: ConfigService,
@@ -35,6 +37,7 @@ export class FeedbackService {
             if (err.response && err.response.data) {
               throw new NotFoundException(err.response.data.message);
             }
+            this.logger.error('le serveur jmmc ne repond pas');
             throw new BadRequestException('le serveur jmmc ne repond pas');
           }),
         ),
@@ -49,11 +52,17 @@ export class FeedbackService {
         });
         return metric.save();
       } else {
+        this.logger.error(
+          'vous ne pouvez pas déposer deux avis pour la meme session',
+        );
         throw new BadRequestException(
           'vous ne pouvez pas déposer deux avis pour la meme session',
         );
       }
     } else {
+      this.logger.error(
+        "une erreur s'est produite pendant la recherche de l'identifiant et le nm de la conférence",
+      );
       throw new NotFoundException(
         "une erreur s'est produite pendant la recherche de l'identifiant et le nm de la conférence",
       );
