@@ -8,7 +8,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Feedback } from 'src/schemas/Feedback.schema';
 import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
 import { HttpService } from '@nestjs/axios';
 import { catchError, firstValueFrom } from 'rxjs';
 import { Logger } from '@nestjs/common';
@@ -21,10 +20,6 @@ export class FeedbackService {
     private configService: ConfigService,
     private readonly httpService: HttpService,
   ) {}
-
-  whereami(req: Request) {
-    return req.headers['webconf-user-region'];
-  }
 
   async createFeedback(body: FeedbackDTO, jmmc_id: string, ip: string) {
     const { data } = await firstValueFrom(
@@ -61,10 +56,10 @@ export class FeedbackService {
       }
     } else {
       this.logger.error(
-        "une erreur s'est produite pendant la recherche de l'identifiant et le nm de la conférence",
+        "une erreur s'est produite pendant la recherche de l'identifiant et le nom de la conférence",
       );
       throw new NotFoundException(
-        "une erreur s'est produite pendant la recherche de l'identifiant et le nm de la conférence",
+        "une erreur s'est produite pendant la recherche de l'identifiant et le nom de la conférence",
       );
     }
   }

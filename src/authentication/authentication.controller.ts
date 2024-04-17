@@ -17,6 +17,12 @@ import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
 import { LoginCallbackDTO } from './DTOs/LoginCallbackDTO';
 import { LogoutCallbackDTO } from './DTOs/LogoutCallbackDTO';
+import {
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiNotFoundResponse,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 @Controller('authentication')
 export class AuthenticationController {
@@ -28,12 +34,16 @@ export class AuthenticationController {
   ) {}
 
   @Get('whereami')
+  @ApiOkResponse({ description: "retoune 'RIE' ou 'INTERNET' " })
   whereami(@Headers('webconf-user-region') userAgent: string) {
     return userAgent;
   }
 
   @Get('login_authorize')
   @Redirect('', 302)
+  @ApiOkResponse({
+    description: "retourne l'url de redirection",
+  })
   loginAuthorize(
     @Res({ passthrough: true }) response: Response,
     @Query('room') room: string,
@@ -54,6 +64,16 @@ export class AuthenticationController {
   }
 
   @Get('login_callback')
+  @ApiOkResponse({
+    description: 'retourne un objet {roomName, jwt, accessToken}',
+  })
+  @ApiUnauthorizedResponse({
+    description: "le paramètre state recu n'est pas le meme envoyé",
+  })
+  @ApiNotFoundResponse({
+    description:
+      "erreur lors de récupération de l'accessToken ou userinfo d'agentConnect",
+  })
   async loginCallback(
     @Query() query: LoginCallbackDTO,
     @Req() request: Request,
@@ -97,6 +117,7 @@ export class AuthenticationController {
 
   @Get('logout')
   @Redirect('', 302)
+  @ApiResponse({ status: 302, description: 'redirection vers cerbère' })
   logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
@@ -114,7 +135,11 @@ export class AuthenticationController {
   }
 
   @Get('logout_callback')
-  // @Redirect('', 302)
+  @ApiOkResponse({ description: "retourne l'url /" })
+  @ApiUnauthorizedResponse({
+    description:
+      "le state de retour n'est pas la meme que celle qui a été envoyé",
+  })
   logoutCallback(
     @Query() query: LogoutCallbackDTO,
     @Req() request: Request,
@@ -135,6 +160,8 @@ export class AuthenticationController {
   }
 
   @Get('refreshToken')
+  @ApiOkResponse({ description: 'retourne { accessToken }' })
+  @ApiUnauthorizedResponse({ description: 'veuillez vous authentifier' })
   async refreshToken(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,

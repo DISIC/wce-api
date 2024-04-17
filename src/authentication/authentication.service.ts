@@ -33,7 +33,7 @@ export class AuthenticationService {
         "la variable state envoyé n'est pas celle reçue {/authentication/login_callback} route",
       );
       throw new UnauthorizedException(
-        "le paramètre state recu n'est pas le meme envoyé",
+        "le paramètre state reçu n'est pas le meme envoyé",
       );
     }
 

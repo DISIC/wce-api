@@ -7,10 +7,15 @@ import {
   Req,
   BadRequestException,
   Headers,
-  Get,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 @Controller('feedback')
 export class FeedbackController {
   constructor(
@@ -18,12 +23,17 @@ export class FeedbackController {
     private configService: ConfigService,
   ) {}
 
-  @Get('whereami')
-  whereami(@Req() req: Request) {
-    return this.feedbackService.whereami(req);
-  }
-
   @Post()
+  @ApiOkResponse({ description: '' })
+  @ApiBadRequestResponse({ description: 'le serveur jmmc ne repond pas' })
+  @ApiBadRequestResponse({
+    description: 'vous ne pouvez pas déposer deux avis pour la meme session',
+  })
+  @ApiNotFoundResponse({
+    description:
+      "une erreur s'est produite pendant la recherche de l'identifiant et le nom de la conférence",
+  })
+  @ApiBody({ type: FeedbackDTO })
   createFeedback(
     @Req() req: Request,
     @Body() body: FeedbackDTO,
