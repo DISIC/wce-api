@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { Matches } from 'class-validator';
 
 @Injectable()
@@ -13,5 +14,6 @@ export class roomNameDTO {
     ),
     { message: "le nom de conférence n'est pas valide" },
   )
+  @ApiProperty({ type: String, description: 'nom de la conférence' })
   roomName: string;
 }

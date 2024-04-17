@@ -96,7 +96,7 @@ export class ConferenceService {
       });
 
       if (!exists) {
-        return { isWhitelisted: false };
+        throw new UnauthorizedException({ isWhitelisted: false });
       }
 
       const { roomName, jwt } = this.sendToken(room);
