@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   WhiteListedDomains,
   WhiteListedDomainsSchema,
-} from 'src/schemas/WhiteListedDomains.schema';
+} from '../schemas/WhiteListedDomains.schema';
 
 @Module({
   imports: [

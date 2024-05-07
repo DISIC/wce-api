@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as crypto from 'crypto';
-import { ConferenceService } from 'src/conference/conference.service';
+import { ConferenceService } from '../conference/conference.service';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
 import { LoginCallbackDTO } from './DTOs/LoginCallbackDTO';

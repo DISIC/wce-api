@@ -30,7 +30,7 @@ export class AuthenticationService {
 
     if (sendedState !== state) {
       this.logger.warn(
-        "la variable state envoyé n'est pas celle reçue {/authentication/login_callback} route",
+        "la variable state envoyé n'est pas celle reçue {/authentication/login_callback} route ",
       );
       throw new UnauthorizedException(
         "le paramètre state reçu n'est pas le meme envoyé",
