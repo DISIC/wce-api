@@ -1,4 +1,4 @@
-FROM node:bullseye-slim
+FROM node:bookworm
 
 WORKDIR .
 

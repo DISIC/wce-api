@@ -38,7 +38,7 @@ export class FeedbackService {
         ),
     );
     if (data) {
-      const allreadyExists = await this.feedbackModel.findOne({ jmmc_id });
+      const allreadyExists = await this.feedbackModel.findById(jmmc_id);
       if (!allreadyExists) {
         const metric = await new this.feedbackModel({
           ip: this.ip2int(ip),
