@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Feedback } from 'src/schemas/Feedback.schema';
+import { Feedback } from '../schemas/Feedback.schema';
 import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
@@ -38,7 +38,7 @@ export class FeedbackService {
         ),
     );
     if (data) {
-      const allreadyExists = await this.feedbackModel.findOne({ jmmc_id });
+      const allreadyExists = await this.feedbackModel.findById(jmmc_id);
       if (!allreadyExists) {
         const metric = await new this.feedbackModel({
           ip: this.ip2int(ip),

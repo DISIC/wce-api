@@ -8,7 +8,6 @@ import {
   BadRequestException,
   Headers,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import {
   ApiBadRequestResponse,
@@ -18,10 +17,7 @@ import {
 } from '@nestjs/swagger';
 @Controller('feedback')
 export class FeedbackController {
-  constructor(
-    private feedbackService: FeedbackService,
-    private configService: ConfigService,
-  ) {}
+  constructor(private feedbackService: FeedbackService) {}
 
   @Post()
   @ApiOkResponse({ description: '' })

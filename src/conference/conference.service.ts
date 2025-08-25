@@ -6,12 +6,12 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ProsodyService } from 'src/prosody/prosody.service';
+import { ProsodyService } from '../prosody/prosody.service';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { WhiteListedDomains } from 'src/schemas/WhiteListedDomains.schema';
+import { WhiteListedDomains } from '../schemas/WhiteListedDomains.schema';
 import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
